@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  web:
+    build: .
+    container_name: api
+    ports:
+      - 9000:9000
+    depends_on:
+      - db
+    volumes:
+      - ./config.json:/app/config.json
+
+  db:
+    image: postgres:12-alpine
+    container_name: db
+    ports:
+      - 5432:5432
+    restart: always
+    volumes:
+      - ./postgres/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./postgres/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=article
+      - LANG=ja_JP.UTF-8
