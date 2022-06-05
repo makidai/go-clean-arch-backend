@@ -4,9 +4,17 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
+	"github.com/labstack/echo"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
+
+	_articleHttpDelivery "github.com/makidai/go-clean-arch-backend/article/delivery/http"
+	_articleHttpDeliveryMiddleware "github.com/makidai/go-clean-arch-backend/article/delivery/http/middleware"
+	_articleRepo "github.com/makidai/go-clean-arch-backend/article/repository/postgres"
+	_articleUcase "github.com/makidai/go-clean-arch-backend/article/usecase"
+	_authorRepo "github.com/makidai/go-clean-arch-backend/author/repository/postgres"
 )
 
 func init() {
@@ -45,4 +53,16 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
+
+	e := echo.New()
+	middL := _articleHttpDeliveryMiddleware.InitMiddleware()
+	e.Use(middL.CORS)
+	arR := _articleRepo.NewPostgresArticleRepository(dbConn)
+	auR := _authorRepo.NewPostgresAuthorRepository(dbConn)
+
+	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
+	au := _articleUcase.NewArticleUsecase(arR, auR, timeoutContext)
+	_articleHttpDelivery.NewArticleHandler(e, au)
+
+	log.Fatal(e.Start(viper.GetString("server.address")))
 }
