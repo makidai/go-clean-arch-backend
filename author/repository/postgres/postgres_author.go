@@ -33,6 +33,6 @@ func (m *postgresAuthorRepo) getOne(ctx context.Context, query string, args ...i
 }
 
 func (m *postgresAuthorRepo) GetByID(ctx context.Context, id int64) (domain.Author, error) {
-	query := `SELECT id, name, created_at, updated_at FROM author WHERE id=?`
+	query := `SELECT id, name, created_at, updated_at FROM author WHERE id=$1`
 	return m.getOne(ctx, query, id)
 }

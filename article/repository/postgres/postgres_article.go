@@ -60,7 +60,7 @@ func (m *postgresArticleRepository) fetch(ctx context.Context, query string, arg
 
 func (m *postgresArticleRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Article, nextCursor string, err error) {
 	query := `SELECT id, title, content, author_id, updated_at, created_at
-  				FROM article WHERE created_at > ? ORDER BY created_at LIMIT ? `
+  				FROM article WHERE created_at > $1 ORDER BY created_at LIMIT $2`
 
 	decodedCursor, err := repository.DecodeCursor(cursor)
 	if err != nil && cursor != "" {
@@ -81,7 +81,7 @@ func (m *postgresArticleRepository) Fetch(ctx context.Context, cursor string, nu
 
 func (m *postgresArticleRepository) GetByID(ctx context.Context, id int64) (res domain.Article, err error) {
 	query := `SELECT id,title,content, author_id, updated_at, created_at
-  				FROM article WHERE ID = ?`
+  				FROM article WHERE ID = $1`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
@@ -99,7 +99,7 @@ func (m *postgresArticleRepository) GetByID(ctx context.Context, id int64) (res 
 
 func (m *postgresArticleRepository) GetByTitle(ctx context.Context, title string) (res domain.Article, err error) {
 	query := `SELECT id,title,content, author_id, updated_at, created_at
-  				FROM article WHERE title = ?`
+  				FROM article WHERE title = $1`
 
 	list, err := m.fetch(ctx, query, title)
 	if err != nil {
@@ -115,7 +115,7 @@ func (m *postgresArticleRepository) GetByTitle(ctx context.Context, title string
 }
 
 func (m *postgresArticleRepository) Store(ctx context.Context, a *domain.Article) (err error) {
-	query := `INSERT  article SET title=? , content=? , author_id=?, updated_at=? , created_at=?`
+	query := `INSERT  article SET title=$1, content=$2, author_id=$3, updated_at=$4, created_at=$5`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
@@ -134,7 +134,7 @@ func (m *postgresArticleRepository) Store(ctx context.Context, a *domain.Article
 }
 
 func (m *postgresArticleRepository) Delete(ctx context.Context, id int64) (err error) {
-	query := "DELETE FROM article WHERE id = ?"
+	query := "DELETE FROM article WHERE id = $1"
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -160,7 +160,7 @@ func (m *postgresArticleRepository) Delete(ctx context.Context, id int64) (err e
 }
 
 func (m *postgresArticleRepository) Update(ctx context.Context, ar *domain.Article) (err error) {
-	query := `UPDATE article set title=?, content=?, author_id=?, updated_at=? WHERE ID = ?`
+	query := `UPDATE article set title=$1, content=$2, author_id=$3, updated_at=$4 WHERE ID = $5`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
